@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diario Oficial - Buscador</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #1c2430;
+      --muted: #667085;
+      --line: #d9dee7;
+      --brand: #155eef;
+      --brand-dark: #0f49b5;
+      --danger: #b42318;
+      --ok: #027a48;
+      --shadow: 0 10px 26px rgba(28, 36, 48, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .bar {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    .status {
+      min-height: 22px;
+      color: var(--muted);
+      text-align: right;
+      font-size: 14px;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 30px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .controls,
+    .results {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+      position: sticky;
+      top: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      color: #344054;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 11px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    input:focus {
+      outline: 2px solid rgba(21, 94, 239, 0.18);
+      border-color: var(--brand);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 44px 44px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      height: 40px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background: #eef2f6;
+      color: var(--ink);
+    }
+
+    button.primary {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    button.primary:hover {
+      background: var(--brand-dark);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
+    }
+
+    .meta {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--ink);
+      font-size: 20px;
+      line-height: 1.1;
+      margin-bottom: 2px;
+    }
+
+    .results {
+      min-height: 520px;
+      overflow: hidden;
+    }
+
+    .results-head {
+      min-height: 58px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .results-head h2 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .message {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .message.error {
+      color: var(--danger);
+    }
+
+    .message.ok {
+      color: var(--ok);
+    }
+
+    .list {
+      display: grid;
+    }
+
+    .item {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .item-title {
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .item-link {
+      color: var(--brand);
+      text-decoration: none;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .item-link:hover {
+      text-decoration: underline;
+    }
+
+    .open {
+      width: 38px;
+      height: 38px;
+      color: var(--brand);
+    }
+
+    .empty {
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+      padding: 22px;
+    }
+
+    @media (max-width: 860px) {
+      .bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .status {
+        text-align: left;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="bar">
+        <h1>Diario Oficial - Buscador</h1>
+        <div class="status" id="status">Pronto</div>
+      </div>
+    </header>
+
+    <main>
+      <section class="controls" aria-label="Filtros de busca">
+        <div class="field">
+          <label for="termos">Palavras-chave</label>
+          <input id="termos" type="text" placeholder="Ex: lei, decreto, contrato">
+        </div>
+
+        <div class="field">
+          <label for="dataInicio">Data inicio</label>
+          <input id="dataInicio" type="text" placeholder="dd/mm/aaaa">
+        </div>
+
+        <div class="field">
+          <label for="dataFim">Data fim</label>
+          <input id="dataFim" type="text" placeholder="dd/mm/aaaa">
+        </div>
+
+        <div class="field">
+          <label for="proxyUrl">Proxy</label>
+          <input id="proxyUrl" type="text" value="auto">
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="buscarBtn" type="button">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+            Buscar
+          </button>
+          <button id="pararBtn" type="button" title="Parar busca" disabled>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect></svg>
+          </button>
+          <button id="csvBtn" type="button" title="Exportar CSV" disabled>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+          </button>
+        </div>
+
+        <div class="meta">
+          <div class="metric"><strong id="totalResultados">0</strong>Resultados</div>
+          <div class="metric"><strong id="paginaAtual">0</strong>Pagina</div>
+        </div>
+      </section>
+
+      <section class="results" aria-label="Resultados">
+        <div class="results-head">
+          <h2>Resultados</h2>
+          <div class="message" id="message"></div>
+        </div>
+        <div class="list" id="lista">
+          <div class="empty">Nenhuma busca executada.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const BASE_URL = "https://www.diariomunicipal.com.br/amm-mg";
+    const SEARCH_URL = BASE_URL + "/pesquisar";
+    const ENTIDADE = "760";
+    const ORGAO = "1379";
+
+    const els = {
+      termos: document.querySelector("#termos"),
+      dataInicio: document.querySelector("#dataInicio"),
+      dataFim: document.querySelector("#dataFim"),
+      proxyUrl: document.querySelector("#proxyUrl"),
+      buscarBtn: document.querySelector("#buscarBtn"),
+      pararBtn: document.querySelector("#pararBtn"),
+      csvBtn: document.querySelector("#csvBtn"),
+      status: document.querySelector("#status"),
+      message: document.querySelector("#message"),
+      lista: document.querySelector("#lista"),
+      totalResultados: document.querySelector("#totalResultados"),
+      paginaAtual: document.querySelector("#paginaAtual")
+    };
+
+    let cancelado = false;
+    let resultados = [];
+    let vistos = new Set();
+
+    function hojeBR() {
+      const data = new Date();
+      const dia = String(data.getDate()).padStart(2, "0");
+      const mes = String(data.getMonth() + 1).padStart(2, "0");
+      return `${dia}/${mes}/${data.getFullYear()}`;
+    }
+
+    function montarUrls(url) {
+      const proxy = els.proxyUrl.value.trim();
+
+      if (!proxy || proxy.toLowerCase() === "direto") {
+        return [url];
+      }
+
+      if (proxy.toLowerCase() === "auto") {
+        return [
+          "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+          "https://api.codetabs.com/v1/proxy?quest=" + url,
+          url
+        ];
+      }
+
+      return [proxy + encodeURIComponent(url)];
+    }
+
+    async function carregarHtml(url, validar = null) {
+      let ultimoErro = null;
+
+      for (const tentativa of montarUrls(url)) {
+        try {
+          const resp = await fetch(tentativa, { cache: "no-store" });
+          if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}`);
+          }
+          const texto = await resp.text();
+          const doc = new DOMParser().parseFromString(texto, "text/html");
+          const proxyRecusou = texto.includes("Server-side requests are not allowed");
+          const paginaValida = validar ? validar(doc, texto) : true;
+          if (texto && !proxyRecusou && paginaValida) {
+            return doc;
+          }
+          throw new Error("Proxy nao retornou a pagina esperada.");
+        } catch (erro) {
+          ultimoErro = erro;
+        }
+      }
+
+      throw ultimoErro || new Error("Nao foi possivel carregar a pagina.");
+    }
+
+    async function obterToken() {
+      const doc = await carregarHtml(
+        SEARCH_URL,
+        (pagina) => Boolean(pagina.querySelector('input[name="busca_avancada[_token]"]'))
+      );
+      const input = doc.querySelector('input[name="busca_avancada[_token]"]');
+      if (!input || !input.value) {
+        throw new Error("Token da pagina nao encontrado. Verifique se o proxy esta respondendo.");
+      }
+      return input.value;
+    }
+
+    function criarUrlBusca(palavra, dataInicio, dataFim, token, pagina) {
+      const params = new URLSearchParams();
+      params.set("busca_avancada[page]", String(pagina));
+      params.set("busca_avancada[entidadeUsuaria]", ENTIDADE);
+      params.set("busca_avancada[nome_orgao]", ORGAO);
+      params.set("busca_avancada[texto]", palavra);
+      params.set("busca_avancada[dataInicio]", dataInicio);
+      params.set("busca_avancada[dataFim]", dataFim);
+      params.set("busca_avancada[_token]", token);
+      return `${SEARCH_URL}?${params.toString()}`;
+    }
+
+    function setEstadoBuscando(ativo) {
+      els.buscarBtn.disabled = ativo;
+      els.pararBtn.disabled = !ativo;
+      els.csvBtn.disabled = ativo || resultados.length === 0;
+    }
+
+    function setMensagem(texto, tipo) {
+      els.message.textContent = texto || "";
+      els.message.className = tipo ? `message ${tipo}` : "message";
+    }
+
+    function atualizarContadores(pagina) {
+      els.totalResultados.textContent = String(resultados.length);
+      els.paginaAtual.textContent = String(pagina || 0);
+    }
+
+    function limparResultados() {
+      resultados = [];
+      vistos = new Set();
+      els.lista.innerHTML = '<div class="empty">Buscando...</div>';
+      atualizarContadores(0);
+      setMensagem("", "");
+    }
+
+    function adicionarResultado(titulo, link) {
+      if (vistos.has(link)) return;
+
+      vistos.add(link);
+      resultados.push({ titulo, link });
+
+      if (resultados.length === 1) {
+        els.lista.innerHTML = "";
+      }
+
+      const item = document.createElement("div");
+      item.className = "item";
+      item.innerHTML = `
+        <div>
+          <div class="item-title"></div>
+          <a class="item-link" target="_blank" rel="noopener"></a>
+        </div>
+        <a class="open" target="_blank" rel="noopener" title="Abrir publicacao">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M8 7h9v9"></path></svg>
+        </a>
+      `;
+
+      item.querySelector(".item-title").textContent = titulo;
+      const linkEl = item.querySelector(".item-link");
+      const openEl = item.querySelector(".open");
+      linkEl.href = link;
+      linkEl.textContent = link;
+      openEl.href = link;
+
+      els.lista.appendChild(item);
+      atualizarContadores(Number(els.paginaAtual.textContent));
+    }
+
+    async function buscarPalavra(palavra, dataInicio, dataFim, token) {
+      let pagina = 1;
+
+      while (!cancelado) {
+        els.status.textContent = `Buscando "${palavra}" - pagina ${pagina}`;
+        atualizarContadores(pagina);
+
+        const url = criarUrlBusca(palavra, dataInicio, dataFim, token, pagina);
+        const doc = await carregarHtml(
+          url,
+          (paginaBusca) => Boolean(paginaBusca.querySelector("#datatable") || paginaBusca.querySelector("#datatable_next"))
+        );
+        const linhas = [...doc.querySelectorAll("#datatable tbody tr")];
+
+        if (linhas.length === 0) break;
+
+        for (const linha of linhas) {
+          const links = [...linha.querySelectorAll("a")];
+          if (links.length < 2) continue;
+
+          const href = links[0].getAttribute("href") || "";
+          if (!href.includes("/amm-mg/load/")) continue;
+
+          const codigo = href.split("/").pop();
+          const titulo = links[1].textContent.trim();
+          adicionarResultado(titulo, `${BASE_URL}/load/${codigo}`);
+        }
+
+        const proxima = doc.querySelector("#datatable_next");
+        const hrefProxima = proxima ? proxima.getAttribute("href") || "" : "";
+        const desabilitada = proxima ? proxima.classList.contains("disabled") : true;
+
+        if (!hrefProxima || hrefProxima === "javascript:void(0)" || desabilitada) {
+          break;
+        }
+
+        pagina += 1;
+      }
+    }
+
+    async function iniciarBusca() {
+      const palavras = els.termos.value.split(",").map((p) => p.trim()).filter(Boolean);
+      const dataInicio = els.dataInicio.value.trim();
+      const dataFim = els.dataFim.value.trim();
+
+      if (palavras.length === 0 || !dataInicio || !dataFim) {
+        setMensagem("Preencha palavra-chave, data inicio e data fim.", "error");
+        return;
+      }
+
+      cancelado = false;
+      limparResultados();
+      setEstadoBuscando(true);
+
+      try {
+        els.status.textContent = "Obtendo token...";
+        const token = await obterToken();
+
+        for (const palavra of palavras) {
+          if (cancelado) break;
+          await buscarPalavra(palavra, dataInicio, dataFim, token);
+        }
+
+        if (cancelado) {
+          els.status.textContent = `Busca interrompida. ${resultados.length} resultados encontrados.`;
+          setMensagem("Busca interrompida.", "");
+        } else {
+          els.status.textContent = `Concluido. ${resultados.length} resultados encontrados.`;
+          setMensagem("Busca concluida.", "ok");
+        }
+
+        if (resultados.length === 0) {
+          els.lista.innerHTML = '<div class="empty">Nenhum resultado encontrado.</div>';
+        }
+      } catch (erro) {
+        els.status.textContent = "Erro na busca.";
+        setMensagem(String(erro.message || erro), "error");
+        if (resultados.length === 0) {
+          els.lista.innerHTML = '<div class="empty">A busca nao retornou dados.</div>';
+        }
+      } finally {
+        setEstadoBuscando(false);
+      }
+    }
+
+    function exportarCsv() {
+      const linhas = [["Titulo", "Link"], ...resultados.map((r) => [r.titulo, r.link])];
+      const csv = linhas
+        .map((linha) => linha.map((valor) => `"${String(valor).replaceAll('"', '""')}"`).join(";"))
+        .join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "resultados-diario-oficial.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    els.buscarBtn.addEventListener("click", iniciarBusca);
+    els.pararBtn.addEventListener("click", () => {
+      cancelado = true;
+      els.status.textContent = "Interrompendo...";
+    });
+    els.csvBtn.addEventListener("click", exportarCsv);
+
+    els.dataInicio.value = hojeBR();
+    els.dataFim.value = hojeBR();
+  </script>
+</body>
+</html>
