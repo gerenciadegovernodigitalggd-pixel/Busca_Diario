@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diario Oficial - Buscador</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --panel: #ffffff;
+      --ink: #162033;
+      --muted: #667085;
+      --line: #d8dee8;
+      --brand: #155eef;
+      --brand-dark: #0f49b5;
+      --danger: #b42318;
+      --ok: #027a48;
+      --shadow: 0 12px 28px rgba(22, 32, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .bar {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 14px;
+      text-align: right;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 30px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .controls,
+    .results {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+      position: sticky;
+      top: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      color: #344054;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 11px;
+      color: var(--ink);
+      font: inherit;
+      background: #fff;
+    }
+
+    input:focus {
+      outline: 2px solid rgba(21, 94, 239, 0.18);
+      border-color: var(--brand);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 44px 44px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      height: 40px;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--ink);
+      background: #eef2f6;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.primary {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    button.primary:hover {
+      background: var(--brand-dark);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
+    }
+
+    .meta {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--ink);
+      font-size: 20px;
+      line-height: 1.1;
+      margin-bottom: 2px;
+    }
+
+    .results {
+      min-height: 560px;
+      overflow: hidden;
+    }
+
+    .results-head {
+      min-height: 58px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .message {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .message.error {
+      color: var(--danger);
+    }
+
+    .message.ok {
+      color: var(--ok);
+    }
+
+    .list {
+      display: grid;
+    }
+
+    .item {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .item-title {
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .item-link {
+      color: var(--brand);
+      text-decoration: none;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .item-link:hover {
+      text-decoration: underline;
+    }
+
+    .open {
+      width: 38px;
+      height: 38px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      color: var(--brand);
+      background: #eef2f6;
+    }
+
+    .empty {
+      min-height: 380px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+      padding: 22px;
+    }
+
+    @media (max-width: 860px) {
+      .bar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 0;
+      }
+
+      .status,
+      .message {
+        text-align: left;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <h1>Diario Oficial - Buscador</h1>
+      <div class="status" id="status">Pronto</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="controls" aria-label="Filtros">
+      <div class="field">
+        <label for="termos">Palavras-chave</label>
+        <input id="termos" type="text" placeholder="Ex: lei, decreto, contrato">
+      </div>
+
+      <div class="field">
+        <label for="dataInicio">Data inicio</label>
+        <input id="dataInicio" type="text" placeholder="dd/mm/aaaa">
+      </div>
+
+      <div class="field">
+        <label for="dataFim">Data fim</label>
+        <input id="dataFim" type="text" placeholder="dd/mm/aaaa">
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="buscarBtn" type="button">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          Buscar
+        </button>
+        <button id="pararBtn" type="button" title="Parar busca" disabled>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"></rect></svg>
+        </button>
+        <button id="csvBtn" type="button" title="Exportar CSV" disabled>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
+        </button>
+      </div>
+
+      <div class="meta">
+        <div class="metric"><strong id="totalResultados">0</strong>Resultados</div>
+        <div class="metric"><strong id="paginaAtual">0</strong>Pagina</div>
+      </div>
+    </section>
+
+    <section class="results" aria-label="Resultados">
+      <div class="results-head">
+        <h2>Resultados</h2>
+        <div class="message" id="message"></div>
+      </div>
+      <div class="list" id="lista">
+        <div class="empty">Nenhuma busca executada.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const els = {
+      termos: document.querySelector("#termos"),
+      dataInicio: document.querySelector("#dataInicio"),
+      dataFim: document.querySelector("#dataFim"),
+      buscarBtn: document.querySelector("#buscarBtn"),
+      pararBtn: document.querySelector("#pararBtn"),
+      csvBtn: document.querySelector("#csvBtn"),
+      status: document.querySelector("#status"),
+      message: document.querySelector("#message"),
+      lista: document.querySelector("#lista"),
+      totalResultados: document.querySelector("#totalResultados"),
+      paginaAtual: document.querySelector("#paginaAtual")
+    };
+
+    let eventos = null;
+    let resultados = [];
+
+    function hojeBR() {
+      const data = new Date();
+      const dia = String(data.getDate()).padStart(2, "0");
+      const mes = String(data.getMonth() + 1).padStart(2, "0");
+      return `${dia}/${mes}/${data.getFullYear()}`;
+    }
+
+    function setBuscando(ativo) {
+      els.buscarBtn.disabled = ativo;
+      els.pararBtn.disabled = !ativo;
+      els.csvBtn.disabled = ativo || resultados.length === 0;
+    }
+
+    function setMensagem(texto, tipo = "") {
+      els.message.textContent = texto;
+      els.message.className = tipo ? `message ${tipo}` : "message";
+    }
+
+    function atualizarContadores(total, pagina) {
+      els.totalResultados.textContent = String(total || 0);
+      els.paginaAtual.textContent = String(pagina || 0);
+    }
+
+    function limparResultados() {
+      resultados = [];
+      els.lista.innerHTML = '<div class="empty">Buscando...</div>';
+      atualizarContadores(0, 0);
+      setMensagem("");
+    }
+
+    function adicionarResultado(item) {
+      resultados.push({ title: item.title, link: item.link });
+
+      if (resultados.length === 1) {
+        els.lista.innerHTML = "";
+      }
+
+      const linha = document.createElement("div");
+      linha.className = "item";
+      linha.innerHTML = `
+        <div>
+          <div class="item-title"></div>
+          <a class="item-link" target="_blank" rel="noopener"></a>
+        </div>
+        <a class="open" target="_blank" rel="noopener" title="Abrir publicacao">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M8 7h9v9"></path></svg>
+        </a>
+      `;
+
+      linha.querySelector(".item-title").textContent = item.title;
+      const link = linha.querySelector(".item-link");
+      const abrir = linha.querySelector(".open");
+      link.href = item.link;
+      link.textContent = item.link;
+      abrir.href = item.link;
+
+      els.lista.appendChild(linha);
+      atualizarContadores(item.total, item.page);
+      els.lista.lastElementChild.scrollIntoView({ block: "nearest" });
+    }
+
+    function iniciarBusca() {
+      const termos = els.termos.value.trim();
+      const dataInicio = els.dataInicio.value.trim();
+      const dataFim = els.dataFim.value.trim();
+
+      if (!termos || !dataInicio || !dataFim) {
+        setMensagem("Preencha palavra-chave, data inicio e data fim.", "error");
+        return;
+      }
+
+      if (eventos) {
+        eventos.close();
+      }
+
+      limparResultados();
+      setBuscando(true);
+      els.status.textContent = "Iniciando busca...";
+
+      const params = new URLSearchParams({
+        termos,
+        data_inicio: dataInicio,
+        data_fim: dataFim
+      });
+
+      eventos = new EventSource(`/api/buscar?${params.toString()}`);
+
+      eventos.onmessage = (evento) => {
+        const dados = JSON.parse(evento.data);
+
+        if (dados.type === "status") {
+          els.status.textContent = dados.message;
+          atualizarContadores(dados.total, dados.page);
+          return;
+        }
+
+        if (dados.type === "result") {
+          adicionarResultado(dados);
+          els.status.textContent = `Buscando... ${dados.total} resultados encontrados.`;
+          return;
+        }
+
+        if (dados.type === "done") {
+          eventos.close();
+          eventos = null;
+          setBuscando(false);
+          els.status.textContent = dados.message;
+          setMensagem("Busca concluida.", "ok");
+          els.csvBtn.disabled = resultados.length === 0;
+          if (resultados.length === 0) {
+            els.lista.innerHTML = '<div class="empty">Nenhum resultado encontrado.</div>';
+          }
+          return;
+        }
+
+        if (dados.type === "error") {
+          eventos.close();
+          eventos = null;
+          setBuscando(false);
+          els.status.textContent = "Erro na busca.";
+          setMensagem(dados.message, "error");
+          if (resultados.length === 0) {
+            els.lista.innerHTML = '<div class="empty">A busca nao retornou dados.</div>';
+          }
+        }
+      };
+
+      eventos.onerror = () => {
+        if (eventos) {
+          eventos.close();
+          eventos = null;
+        }
+        setBuscando(false);
+        els.status.textContent = "Erro na busca.";
+        setMensagem("A conexao com o backend foi interrompida.", "error");
+      };
+    }
+
+    function pararBusca() {
+      if (eventos) {
+        eventos.close();
+        eventos = null;
+      }
+      setBuscando(false);
+      els.status.textContent = `Busca interrompida. ${resultados.length} resultados encontrados.`;
+      setMensagem("Busca interrompida.");
+    }
+
+    function exportarCsv() {
+      const linhas = [["Titulo", "Link"], ...resultados.map((item) => [item.title, item.link])];
+      const csv = linhas
+        .map((linha) => linha.map((valor) => `"${String(valor).replaceAll('"', '""')}"`).join(";"))
+        .join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "resultados-diario-oficial.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    els.buscarBtn.addEventListener("click", iniciarBusca);
+    els.pararBtn.addEventListener("click", pararBusca);
+    els.csvBtn.addEventListener("click", exportarCsv);
+
+    els.dataInicio.value = hojeBR();
+    els.dataFim.value = hojeBR();
+  </script>
+</body>
+</html>
